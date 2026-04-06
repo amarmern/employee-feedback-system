@@ -69,7 +69,6 @@ exports.getAverageRating = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // ✅ Validate ID first
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ msg: 'Invalid Employee ID' });
     }
@@ -77,7 +76,7 @@ exports.getAverageRating = async (req, res) => {
     const result = await Feedback.aggregate([
       {
         $match: {
-          givenTo: new mongoose.Types.ObjectId(id), // ✅ FIX HERE
+          givenTo: new mongoose.Types.ObjectId(id),
         },
       },
       {
