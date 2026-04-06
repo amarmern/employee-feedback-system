@@ -7,8 +7,9 @@ const {
 } = require('../controllers/feedbackController');
 
 router.post('/', submitFeedback);
-router.get('/:id', getFeedbackForEmployee);
 router.get('/avg/:id', getAverageRating);
+router.get('/:id', getFeedbackForEmployee);
+
 router.delete('/:id', deleteFeedback);
 
 module.exports = router;

@@ -1,10 +1,11 @@
 const Feedback = require('../models/Feedback');
-//const mongoose = require('mongoose');
+const mongoose = require('mongoose');
 const { feedbackSchema } = require('../validation/feedbackValidation');
 
 exports.submitFeedback = async (req, res) => {
   try {
     const { givenBy, givenTo } = req.body;
+    console.log(givenBy, givenTo);
     const { error } = feedbackSchema.validate(req.body);
     if (error) {
       return res.status(400).json({
@@ -65,17 +66,37 @@ exports.getFeedbackForEmployee = async (req, res) => {
 };
 
 exports.getAverageRating = async (req, res) => {
-  const result = await Feedback.aggregate([
-    { $match: { givenTo: require('mongoose').Types.ObjectId(req.params.id) } },
-    {
-      $group: {
-        _id: '$givenTo',
-        avgRating: { $avg: '$rating' },
-      },
-    },
-  ]);
+  try {
+    const { id } = req.params;
 
-  res.json(result[0] || { avgRating: 0 });
+    // ✅ Validate ID first
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ msg: 'Invalid Employee ID' });
+    }
+
+    const result = await Feedback.aggregate([
+      {
+        $match: {
+          givenTo: new mongoose.Types.ObjectId(id), // ✅ FIX HERE
+        },
+      },
+      {
+        $group: {
+          _id: '$givenTo',
+          avgRating: { $avg: '$rating' },
+          totalFeedbacks: { $sum: 1 },
+        },
+      },
+    ]);
+
+    if (result.length === 0) {
+      return res.json({ avgRating: 0, totalFeedbacks: 0 });
+    }
+
+    res.json(result[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 };
 
 exports.deleteFeedback = async (req, res) => {

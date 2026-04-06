@@ -1,8 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import { useState } from 'react';
+import API from '../api/api';
 
-function App() {
-  const [employees, setEmployees] = useState([]);
+export default function FeedbackForm({ employees }) {
   const [form, setForm] = useState({
     givenBy: '',
     givenTo: '',
@@ -10,38 +9,34 @@ function App() {
     comment: '',
   });
 
-  useEffect(() => {
-    axios
-      .get('http://localhost:5000/api/employees')
-      .then((res) => setEmployees(res.data));
-  }, []);
-
   const submit = async () => {
-    await axios.post('http://localhost:5000/api/feedback', form);
-    alert('Feedback submitted');
+    try {
+      await API.post('/feedback', form);
+      alert('Feedback submitted');
+    } catch (err) {
+      alert(err.response?.data?.msg || 'Error');
+    }
   };
 
   return (
     <div>
-      <h2>Employees</h2>
-      {employees.map((emp) => (
-        <div key={emp._id}>
-          {emp.name} - {emp.department}
-        </div>
-      ))}
+      <h3>Submit Feedback</h3>
 
-      <h2>Submit Feedback</h2>
       <select onChange={(e) => setForm({ ...form, givenBy: e.target.value })}>
         <option>Select Giver</option>
-        {employees.map((e) => (
-          <option value={e._id}>{e.name}</option>
+        {employees.map((emp) => (
+          <option key={emp._id} value={emp._id}>
+            {emp.name}
+          </option>
         ))}
       </select>
 
       <select onChange={(e) => setForm({ ...form, givenTo: e.target.value })}>
         <option>Select Receiver</option>
-        {employees.map((e) => (
-          <option value={e._id}>{e.name}</option>
+        {employees.map((emp) => (
+          <option key={emp._id} value={emp._id}>
+            {emp.name}
+          </option>
         ))}
       </select>
 
@@ -61,5 +56,3 @@ function App() {
     </div>
   );
 }
-
-export default App;
